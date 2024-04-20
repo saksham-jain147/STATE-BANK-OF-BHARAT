@@ -1,9 +1,13 @@
 package com.sjain.finance.v1.bharat.service;
 
+import com.sjain.finance.v1.bharat.dto.AccountUpdateDetailsResponse;
+import com.sjain.finance.v1.bharat.dto.AccountUpdateDetailsRequest;
 import com.sjain.finance.v1.bharat.dto.UserRequest;
 import com.sjain.finance.v1.bharat.dto.UserResponse;
 import com.sjain.finance.v1.bharat.entity.AccountInformation;
+import com.sjain.finance.v1.bharat.exceptions.AccountNotFoundStep;
 import com.sjain.finance.v1.bharat.mapper.MapperToResponse;
+import com.sjain.finance.v1.bharat.mapper.MapperToUpdateResponse;
 import com.sjain.finance.v1.bharat.repository.AccountDetailsRepository;
 import com.sjain.finance.v1.bharat.utils.AccountDetailsGenerator;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import static com.sjain.finance.v1.bharat.constants.AccountDetailsConstants.*;
@@ -53,11 +58,12 @@ public class AccountServiceImpl implements AccountService{
                 .routingNumber(BANK_V1_ROUTING)
                 .accountType(userRequest.getAccountType())
                 .status(BANK_V1_STATUS)
-                .localDateTime(LocalDateTime.now())
+                .accountCreatedDateTime(LocalDateTime.now())
                 .accountOpenDate(LocalDate.now())
                 .accountNumber(accountDetailsGenerator.generateAccountNumber())
                 .ifscCode("SBB" + IFSC_CODE)
                 .bankPinCode(BANK_PIN)
+                .accountLastUpdatedDateTime(LocalDateTime.now())
                 .build();
 
         accountDetailsRepository.save(accountInformation);
@@ -67,5 +73,47 @@ public class AccountServiceImpl implements AccountService{
 
         log.info("Account created successfully for user: {}", userRes.getAccountHolderName());
         return userRes;
+    }
+
+    @Override
+    public AccountUpdateDetailsResponse updateAccountDetails(AccountUpdateDetailsRequest accountUpdateDetailsRequest) {
+        log.info("Updating account details for account number: {}", accountUpdateDetailsRequest.getAccountNumber());
+
+        Optional<AccountInformation> userInformation = Optional.ofNullable(accountDetailsRepository.findByAccountNumber(
+                accountUpdateDetailsRequest.getAccountNumber()));
+
+        if (userInformation.isPresent()) {
+            log.info("User information found for account number: {}", accountUpdateDetailsRequest.getAccountNumber());
+            log.info("Updating account details for account holder: {}", accountUpdateDetailsRequest.getAccountHolderName());
+
+            AccountInformation existingAccount = userInformation.get();
+
+            existingAccount.setAccountHolderName(accountUpdateDetailsRequest.getAccountHolderName());
+            existingAccount.setContactEmail(accountUpdateDetailsRequest.getContactEmail());
+            existingAccount.setContactPhone(accountUpdateDetailsRequest.getContactPhone());
+            existingAccount.setContactAddress(accountUpdateDetailsRequest.getContactAddress());
+            existingAccount.setStateOfOrigin(accountUpdateDetailsRequest.getStateOfOrigin());
+            existingAccount.setPinCodeNumber(accountUpdateDetailsRequest.getPinCodeNumber());
+            existingAccount.setPassword(accountUpdateDetailsRequest.getPassword());
+            existingAccount.setCurrentLocation(accountUpdateDetailsRequest.getCurrentLocation());
+            existingAccount.setDesignation(accountUpdateDetailsRequest.getDesignation());
+            existingAccount.setCountry(accountUpdateDetailsRequest.getCountry());
+            existingAccount.setAccountType(accountUpdateDetailsRequest.getAccountType());
+//            existingAccount.setAccountLastUpdatedDateTime(LocalDateTime.now());
+
+
+            accountDetailsRepository.save(existingAccount);
+            log.info("Account details updated successfully for account holder: {}", accountUpdateDetailsRequest.getAccountHolderName());
+
+            MapperToUpdateResponse mapperToUpdateResponse = new MapperToUpdateResponse();
+
+            AccountUpdateDetailsResponse accountUpdateDetailsResponse = mapperToUpdateResponse.userInformationToUpdateAccountResponse(existingAccount);
+            accountUpdateDetailsResponse.setMessage(BANK_V1_ACCOUNT_DETAILS_UPDATED);
+            return accountUpdateDetailsResponse;
+
+        } else
+
+            log.info("Account not found for account number: {}", accountUpdateDetailsRequest.getAccountNumber());
+        throw new AccountNotFoundStep("The details you have entered are incorrect. There is no account with these details. Please double-check the information and try again.");
     }
 }

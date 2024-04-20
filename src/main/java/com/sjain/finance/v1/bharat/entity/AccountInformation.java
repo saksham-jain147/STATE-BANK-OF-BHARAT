@@ -1,8 +1,6 @@
 package com.sjain.finance.v1.bharat.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -41,8 +39,9 @@ public class AccountInformation {
     private String isHaveUpiId;
     private double accountBalance;
     private String status;
-    private LocalDateTime localDateTime;
     private LocalDate accountOpenDate;
+    private LocalDateTime accountCreatedDateTime;
+    private LocalDateTime accountLastUpdatedDateTime;
 
 
 }
