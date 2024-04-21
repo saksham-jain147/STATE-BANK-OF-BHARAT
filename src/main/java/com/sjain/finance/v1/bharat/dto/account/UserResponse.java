@@ -1,9 +1,10 @@
-package com.sjain.finance.v1.bharat.dto;
+package com.sjain.finance.v1.bharat.dto.account;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
@@ -19,7 +20,7 @@ public class UserResponse {
     private String IfscCode;
     private LocalDate accountOpenDate;
     private String isHaveUpiId;
-    private double accountBalance;
+    private BigDecimal accountBalance;
     private String routingNumber;
     private String password;
     private String accountType;

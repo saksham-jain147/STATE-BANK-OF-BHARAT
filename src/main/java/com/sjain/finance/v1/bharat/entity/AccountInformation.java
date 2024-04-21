@@ -3,6 +3,7 @@ package com.sjain.finance.v1.bharat.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -37,7 +38,7 @@ public class AccountInformation {
     private String bankPinCode;
     private String accountType;
     private String isHaveUpiId;
-    private double accountBalance;
+    private BigDecimal accountBalance;
     private String status;
     private LocalDate accountOpenDate;
     private LocalDateTime accountCreatedDateTime;

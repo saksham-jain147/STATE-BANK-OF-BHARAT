@@ -1,9 +1,9 @@
 package com.sjain.finance.v1.bharat.service;
 
-import com.sjain.finance.v1.bharat.dto.*;
+import com.sjain.finance.v1.bharat.dto.account.*;
 import com.sjain.finance.v1.bharat.entity.AccountInformation;
 import com.sjain.finance.v1.bharat.exceptions.AccountNotFoundStep;
-import com.sjain.finance.v1.bharat.mapper.MapperToResponse;
+import com.sjain.finance.v1.bharat.mapper.MapperToUserResponse;
 import com.sjain.finance.v1.bharat.mapper.MapperToUpdateResponse;
 import com.sjain.finance.v1.bharat.repository.AccountDetailsRepository;
 import com.sjain.finance.v1.bharat.utils.AccountDetailsGenerator;
@@ -28,7 +28,7 @@ public class AccountServiceImpl implements AccountService{
         log.info("Creating a new account.");
 
         String userIdGenerated = UUID.randomUUID().toString();
-        MapperToResponse mapperToResponse = new MapperToResponse();
+        MapperToUserResponse mapperToUserResponse = new MapperToUserResponse();
 
         AccountDetailsGenerator accountDetailsGenerator = new AccountDetailsGenerator();
 
@@ -65,7 +65,7 @@ public class AccountServiceImpl implements AccountService{
 
         accountDetailsRepository.save(accountInformation);
 
-        UserResponse userRes = mapperToResponse.userInformationToUserResponse(accountInformation);
+        UserResponse userRes = mapperToUserResponse.userInformationToUserResponse(accountInformation);
         userRes.setMessage(BANK_V1_ACCOUNT_CREATED);
 
         log.info("Account created successfully for user: {}", userRes.getAccountHolderName());
@@ -118,7 +118,7 @@ public class AccountServiceImpl implements AccountService{
     public AccountDetailsResponse getYourAccountDetails(String accountNumber, String ifscCode, String password) {
         log.info("Getting account details for accountNumber: {}", accountNumber);
 
-        AccountInformation accountInformation = accountDetailsRepository.findByAccountIdAndIfscCode(accountNumber
+        AccountInformation accountInformation = accountDetailsRepository.findByAccountIdIfscCodeAndPassword(accountNumber
                 , ifscCode, password);
         AccountDetailsResponse accountDetailsResponse = new AccountDetailsResponse();
 

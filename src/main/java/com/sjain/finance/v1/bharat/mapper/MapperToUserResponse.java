@@ -1,9 +1,9 @@
 package com.sjain.finance.v1.bharat.mapper;
 
-import com.sjain.finance.v1.bharat.dto.UserResponse;
+import com.sjain.finance.v1.bharat.dto.account.UserResponse;
 import com.sjain.finance.v1.bharat.entity.AccountInformation;
 
-public class MapperToResponse {
+public class MapperToUserResponse {
     public UserResponse userInformationToUserResponse(AccountInformation accountInformation){
         UserResponse userResponse = new UserResponse();
         userResponse.setIsHaveUpiId(accountInformation.getIsHaveUpiId());

@@ -1,6 +1,6 @@
 package com.sjain.finance.v1.bharat.controller;
 
-import com.sjain.finance.v1.bharat.dto.*;
+import com.sjain.finance.v1.bharat.dto.account.*;
 import com.sjain.finance.v1.bharat.exceptions.AccountNotFoundStep;
 import com.sjain.finance.v1.bharat.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;

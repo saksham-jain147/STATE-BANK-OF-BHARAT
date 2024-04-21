@@ -1,6 +1,6 @@
 package com.sjain.finance.v1.bharat.mapper;
 
-import com.sjain.finance.v1.bharat.dto.AccountUpdateDetailsResponse;
+import com.sjain.finance.v1.bharat.dto.account.AccountUpdateDetailsResponse;
 import com.sjain.finance.v1.bharat.entity.AccountInformation;
 
 public class MapperToUpdateResponse {

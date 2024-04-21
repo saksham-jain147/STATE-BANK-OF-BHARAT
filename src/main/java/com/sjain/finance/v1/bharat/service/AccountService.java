@@ -1,6 +1,6 @@
 package com.sjain.finance.v1.bharat.service;
 
-import com.sjain.finance.v1.bharat.dto.*;
+import com.sjain.finance.v1.bharat.dto.account.*;
 
 public interface AccountService {
     UserResponse createAccount(UserRequest userRequest);

@@ -1,9 +1,10 @@
-package com.sjain.finance.v1.bharat.dto;
+package com.sjain.finance.v1.bharat.dto.account;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -28,7 +29,7 @@ public class AccountDetailsResponse {
     private String bankBranch;
     private String routingNumber;
     private String accountType;
-    private double accountBalance;
+    private BigDecimal accountBalance;
     private String status;
     private LocalDate accountOpenDate;
     private LocalDateTime accountCreatedDateTime;
