@@ -1,5 +1,7 @@
 package com.sjain.finance.v1.bharat.controller;
 
+import com.sjain.finance.v1.bharat.dto.transaction.DepositRequest;
+import com.sjain.finance.v1.bharat.dto.transaction.DepositResponse;
 import com.sjain.finance.v1.bharat.dto.transaction.PaymentRequest;
 import com.sjain.finance.v1.bharat.dto.transaction.PaymentResponse;
 import com.sjain.finance.v1.bharat.exceptions.AccountNotFoundStep;
@@ -30,6 +32,20 @@ public class TransactionController {
             headers.add("Message",String.valueOf(e));
             return new ResponseEntity<>(headers,HttpStatus.BAD_REQUEST);
         } catch (AccountNotFoundStep e){
+            MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+            headers.add("Message",String.valueOf(e));
+            return new ResponseEntity<>(headers,HttpStatus.BAD_REQUEST);
+        } catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    @PostMapping("/deposit-money")
+    ResponseEntity<DepositResponse> depositCash(@RequestBody DepositRequest depositRequest){
+        try {
+            DepositResponse response = transactionService.depositCash(depositRequest);
+            return new ResponseEntity<DepositResponse>(response, HttpStatus.ACCEPTED);
+        }  catch (AccountNotFoundStep e){
             MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
             headers.add("Message",String.valueOf(e));
             return new ResponseEntity<>(headers,HttpStatus.BAD_REQUEST);

@@ -1,11 +1,14 @@
 package com.sjain.finance.v1.bharat.service;
 
+import com.sjain.finance.v1.bharat.dto.transaction.DepositRequest;
+import com.sjain.finance.v1.bharat.dto.transaction.DepositResponse;
 import com.sjain.finance.v1.bharat.dto.transaction.PaymentRequest;
 import com.sjain.finance.v1.bharat.dto.transaction.PaymentResponse;
 import com.sjain.finance.v1.bharat.entity.AccountInformation;
 import com.sjain.finance.v1.bharat.entity.TransactionDetails;
 import com.sjain.finance.v1.bharat.exceptions.AccountNotFoundStep;
 import com.sjain.finance.v1.bharat.exceptions.InsufficientBalanceException;
+import com.sjain.finance.v1.bharat.mapper.MapperToDepositResponse;
 import com.sjain.finance.v1.bharat.mapper.MapperToPaymentResponse;
 import com.sjain.finance.v1.bharat.repository.AccountDetailsRepository;
 import com.sjain.finance.v1.bharat.repository.TransactionDetailsRepository;
@@ -101,5 +104,48 @@ public class TransactionServiceImpl implements TransactionService{
             throw new AccountNotFoundStep("The details you have entered are incorrect. There is no account with these details. Please double-check the information and try again.");
         }
 
+    }
+
+    @Override
+    @Transactional
+    public DepositResponse depositCash(DepositRequest depositRequest) {
+        log.info("Adding money for account number: {}", depositRequest.getAccountNumber());
+        AccountInformation accountInformation = accountDetailsRepository.findByAccountIdIfscCodeAndPassword(depositRequest.getAccountNumber(), depositRequest.getIfscCode(), depositRequest.getPassword());
+
+        if(accountInformation != null){
+            log.info("Account found for Account Number : {}", depositRequest.getAccountNumber());
+
+            MapperToDepositResponse mapperToDepositResponse = new MapperToDepositResponse();
+
+            BigDecimal amount = depositRequest.getAmount();
+            BigDecimal currentBalance = accountInformation.getAccountBalance();
+
+            accountInformation.setAccountBalance(currentBalance.add(amount));
+            accountInformation = accountDetailsRepository.save(accountInformation);
+
+            String transactionReferenceId = UUID.randomUUID().toString();
+
+            TransactionDetails transactionDetails = TransactionDetails.builder()
+                    .transactionReferenceId(transactionReferenceId)
+                    .accountNumber(accountInformation.getAccountNumber())
+                    .bankName(accountInformation.getBankName())
+                    .ifscCode(accountInformation.getIfscCode())
+                    .transactionType("CREDIT")
+                    .amount(amount)
+                    .localDateTime(LocalDateTime.now())
+                    .comments(depositRequest.getComments())
+                    .currentBalance(accountInformation.getAccountBalance())
+                    .build();
+
+            transactionDetailsRepository.save(transactionDetails);
+
+            log.info("Money successfully deposited to account number : {}", accountInformation.getAccountNumber());
+
+            DepositResponse depositResponse = mapperToDepositResponse.transactionDetailsToDepositResponse(transactionDetails);
+            return depositResponse;
+        } else {
+            log.info("Account not found for Account Number : {}", depositRequest.getAccountNumber());
+            throw new AccountNotFoundStep("The details you have entered for sender's account are incorrect. There is no account with these details. Please double-check the information and try again.");
+        }
     }
 }
