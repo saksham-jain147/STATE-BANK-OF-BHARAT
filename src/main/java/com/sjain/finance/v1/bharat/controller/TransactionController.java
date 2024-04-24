@@ -1,9 +1,6 @@
 package com.sjain.finance.v1.bharat.controller;
 
-import com.sjain.finance.v1.bharat.dto.transaction.DepositRequest;
-import com.sjain.finance.v1.bharat.dto.transaction.DepositResponse;
-import com.sjain.finance.v1.bharat.dto.transaction.PaymentRequest;
-import com.sjain.finance.v1.bharat.dto.transaction.PaymentResponse;
+import com.sjain.finance.v1.bharat.dto.transaction.*;
 import com.sjain.finance.v1.bharat.exceptions.AccountNotFoundStep;
 import com.sjain.finance.v1.bharat.exceptions.InsufficientBalanceException;
 import com.sjain.finance.v1.bharat.service.TransactionService;
@@ -46,6 +43,24 @@ public class TransactionController {
             DepositResponse response = transactionService.depositCash(depositRequest);
             return new ResponseEntity<DepositResponse>(response, HttpStatus.ACCEPTED);
         }  catch (AccountNotFoundStep e){
+            MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+            headers.add("Message",String.valueOf(e));
+            return new ResponseEntity<>(headers,HttpStatus.BAD_REQUEST);
+        } catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    @PostMapping("/withdraw-money")
+    ResponseEntity<WithdrawalResponse> withdrawCash(@RequestBody WithdrawalRequest withdrawalRequest){
+        try {
+            WithdrawalResponse response = transactionService.withdrawCash(withdrawalRequest);
+            return new ResponseEntity<WithdrawalResponse>(response, HttpStatus.ACCEPTED);
+        } catch (InsufficientBalanceException e){
+            MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+            headers.add("Message",String.valueOf(e));
+            return new ResponseEntity<>(headers,HttpStatus.BAD_REQUEST);
+        } catch (AccountNotFoundStep e){
             MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
             headers.add("Message",String.valueOf(e));
             return new ResponseEntity<>(headers,HttpStatus.BAD_REQUEST);

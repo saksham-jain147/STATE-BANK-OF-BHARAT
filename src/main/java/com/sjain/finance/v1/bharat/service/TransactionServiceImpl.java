@@ -1,15 +1,13 @@
 package com.sjain.finance.v1.bharat.service;
 
-import com.sjain.finance.v1.bharat.dto.transaction.DepositRequest;
-import com.sjain.finance.v1.bharat.dto.transaction.DepositResponse;
-import com.sjain.finance.v1.bharat.dto.transaction.PaymentRequest;
-import com.sjain.finance.v1.bharat.dto.transaction.PaymentResponse;
+import com.sjain.finance.v1.bharat.dto.transaction.*;
 import com.sjain.finance.v1.bharat.entity.AccountInformation;
 import com.sjain.finance.v1.bharat.entity.TransactionDetails;
 import com.sjain.finance.v1.bharat.exceptions.AccountNotFoundStep;
 import com.sjain.finance.v1.bharat.exceptions.InsufficientBalanceException;
 import com.sjain.finance.v1.bharat.mapper.MapperToDepositResponse;
 import com.sjain.finance.v1.bharat.mapper.MapperToPaymentResponse;
+import com.sjain.finance.v1.bharat.mapper.MapperToWithdrawalResponse;
 import com.sjain.finance.v1.bharat.repository.AccountDetailsRepository;
 import com.sjain.finance.v1.bharat.repository.TransactionDetailsRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -145,6 +143,54 @@ public class TransactionServiceImpl implements TransactionService{
             return depositResponse;
         } else {
             log.info("Account not found for Account Number : {}", depositRequest.getAccountNumber());
+            throw new AccountNotFoundStep("The details you have entered for sender's account are incorrect. There is no account with these details. Please double-check the information and try again.");
+        }
+    }
+
+    @Override
+    @Transactional
+    public WithdrawalResponse withdrawCash(WithdrawalRequest withdrawalRequest) throws InsufficientBalanceException {
+        log.info("Withdrawing money from account number: {}", withdrawalRequest.getAccountNumber());
+        AccountInformation accountInformation = accountDetailsRepository.findByAccountIdIfscCodeAndPassword(withdrawalRequest.getAccountNumber(), withdrawalRequest.getIfscCode(), withdrawalRequest.getPassword());
+
+        if(accountInformation != null){
+            log.info("Account found for Account Number : {}", withdrawalRequest.getAccountNumber());
+
+            MapperToWithdrawalResponse mapperToWithdrawalResponse = new MapperToWithdrawalResponse();
+
+            BigDecimal amount = withdrawalRequest.getAmount();
+            BigDecimal currentBalance = accountInformation.getAccountBalance();
+
+            if(currentBalance.compareTo(amount)<0){
+                log.info("Insufficient balance in account. Cannot process this transaction.");
+                throw new InsufficientBalanceException("Insufficient balance in sender's account. Cannot process this transaction.");
+            }
+
+            accountInformation.setAccountBalance(currentBalance.subtract(amount));
+            accountInformation = accountDetailsRepository.save(accountInformation);
+
+            String transactionReferenceId = UUID.randomUUID().toString();
+
+            TransactionDetails transactionDetails = TransactionDetails.builder()
+                    .transactionReferenceId(transactionReferenceId)
+                    .accountNumber(accountInformation.getAccountNumber())
+                    .bankName(accountInformation.getBankName())
+                    .ifscCode(accountInformation.getIfscCode())
+                    .transactionType("DEBIT")
+                    .amount(amount.negate())
+                    .localDateTime(LocalDateTime.now())
+                    .comments(withdrawalRequest.getComments())
+                    .currentBalance(accountInformation.getAccountBalance())
+                    .build();
+
+            transactionDetailsRepository.save(transactionDetails);
+
+            log.info("Money successfully deposited to account number : {}", accountInformation.getAccountNumber());
+
+            WithdrawalResponse withdrawalResponse = mapperToWithdrawalResponse.transactionDetailsToDepositResponse(transactionDetails);
+            return withdrawalResponse;
+        } else {
+            log.info("Account not found for Account Number : {}", withdrawalRequest.getAccountNumber());
             throw new AccountNotFoundStep("The details you have entered for sender's account are incorrect. There is no account with these details. Please double-check the information and try again.");
         }
     }
